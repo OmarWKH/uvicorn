@@ -64,3 +64,27 @@ def test_should_not_reload_when_dot_file_is_changed(tmpdir):
         reloader.shutdown()
     finally:
         os.chdir(working_dir)
+
+
+def test_should_not_reload_when_non_py_file_is_changed(tmpdir):
+    file = "example.txt"
+    update_file = Path(os.path.join(str(tmpdir), file))
+    update_file.touch()
+
+    working_dir = os.getcwd()
+    os.chdir(str(tmpdir))
+    try:
+        config = Config(app=None, reload=True)
+        reloader = WatchGodReload(config, target=run, sockets=[])
+        reloader.signal_handler(sig=signal.SIGINT, frame=None)
+        reloader.startup()
+
+        assert not reloader.should_restart()
+        time.sleep(0.1)
+        update_file.touch()
+        assert not reloader.should_restart()
+
+        reloader.restart()
+        reloader.shutdown()
+    finally:
+        os.chdir(working_dir)
