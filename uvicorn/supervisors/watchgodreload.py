@@ -1,27 +1,15 @@
 import logging
-import re
 from os import path
 
-from watchgod import DefaultWatcher
+from watchgod import PythonWatcher
 
 from uvicorn.supervisors.basereload import BaseReload
 
 logger = logging.getLogger("uvicorn.error")
 
 
-class CustomWatcher(DefaultWatcher):
-    ignore_dotted_file_regex = r"^\/?(?:\w+\/)*(\.\w+)"
-    ignored = []
-
-    def __init__(self, root_path):
-        for t in self.ignored_file_regexes:
-            self.ignored.append(t)
-        self.ignored.append(self.ignore_dotted_file_regex)
-        self._ignored = tuple(re.compile(r) for r in self.ignored)
-        super().__init__(root_path)
-
-    def should_watch_file(self, entry):
-        return not any(r.search(entry.name) for r in self._ignored)
+class CustomWatcher(PythonWatcher):
+    pass
 
 
 class WatchGodReload(BaseReload):
